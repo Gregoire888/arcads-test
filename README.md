@@ -1,34 +1,15 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+# Dynamic Arcads Real Estate
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This application is a real estate transactions monitoring platform that allows create transactions and retrieve report data.
 
 ## Installation
 
 ```bash
+# Setup the database
+$ docker-compose up -d
+# Install dependencies
 $ yarn install
 ```
 
@@ -58,16 +39,113 @@ $ yarn run test:e2e
 $ yarn run test:cov
 ```
 
-## Support
+## Technologies
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+This application is built with the [Nest](https://github.com/nestjs/nest) framework.
+The database is a PostgreSQL instance.
 
-## Stay in touch
+For API documentation, the [Swagger](https://swagger.io/) module is used.
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Dependencies
 
-## License
+| Dependency | Purpose |
+|------------|---------|
+| [PostgreSQL](https://www.postgresql.org/) | Database |
+| [TypeORM](https://typeorm.io/) | Database ORM |
+| [Swagger](https://swagger.io/) | API documentation |
+| [class-validator](https://github.com/typestack/class-validator) | API data validation |
+| [class-transformer](https://github.com/typestack/class-transformer) | API data serialization |
 
-Nest is [MIT licensed](LICENSE).
+## Design decisions
+
+### Data model
+
+The data model is designed to be as simple as possible. It is composed of only one table for the transactions.
+
+#### Transaction
+
+| Column        | Type          | Unique | Indexed |
+| ------------- | ------------- | ------ | ------- |
+| id            | uuid          | Yes    | Yes     |
+| createdAt     | timestamp     | No     | No      |
+| updatedAt     | timestamp     | No     | No      |
+| transactionDate | timestamp     | No     | No      |
+| price         | integer       | No     | No      |
+| propertyType  | varchar(255)   | No     | No      |
+| city          | varchar(255)   | No     | No      |
+| area          | integer        | No     | No      |
+
+##### Indexes
+
+- `city`: Used for the city performance report.
+
+##### The `margin` column
+
+The `margin` column is a calculated column that is computed when a transaction is created. It is computed by subtracting the `price` from the `transactionCost`.
+
+As several report data are based on the margin, it was decided to store it in the database. An approrite method could be a computed column in the database.
+
+However, to avoid business logic in the database, the margin is computed in the application.
+It should be indexed for query performance.
+
+### API
+
+The API is a REST API with the following endpoints:
+
+- `POST /transactions`: Create a new transaction.
+- `GET /reports/highest-margin`: Get the top 5 transactions with the highest margin.
+- `GET /reports/weekly-average-margin`: Get the average margin for the last week and its change compared to the previous week.
+- `GET /reports/city-performance`: Get the top 5 cities by average margin.
+
+When your application is running, you can access the API documentation at `http://localhost:3000/api`.
+
+### Application architecture
+
+The application is organized into modules. Each module is responsible for a specific feature.
+
+#### Module architecture
+
+As the application is rather light-weight and simple (i.e. no heavy business logic), using patterns such as clean architecture seems rather overkill. Furthermore, embracing the NestJs framework, the `Controller/Service/Repository` layers approach is the default choice and would allow to onboard new developers quickly.
+
+**Dependency inversion** on the `service` layer
+
+By default, the service layer is dependent on the repository layer. However, to allow independency of the service layer as it holds the business logic, it should declare abstractions for the repository layer.
+
+This allows decoupling the service layer from the database.
+
+##### Layers & Responsibilities
+
+- **Controllers** are responsible for handling incoming requests and returning responses to the client.
+- **Services** contain the business logic.
+- **Repositories** are responsible for data manipulation.
+
+#### The `Transaction` module
+
+This module is responsible for creating transactions.
+
+**Components:**
+
+- `TransactionController`: Handles the incoming requests and returns the responses.
+- `TransactionService`: Contains the business logic.
+- `TransactionRepository`: Is responsible for transaction creation.
+
+#### The `Report` module
+
+This module is responsible for computing and retrieving report data.
+
+**Components:**
+
+- `ReportController`: Handles the incoming requests and returns the responses.
+- `ReportService`: Contains the business logic.
+- `TransactionRepository`: Is responsible for retrieving report data.
+
+### Testing strategy
+
+Each layer should be tested separately by mocking the lower layers in unit tests.
+
+To ensure the layers are working well together, integration tests are written. They cover the API endpoints. To keep the tests light, the database is in-memory.
+Integration test should include consecutive calls to the API.
+
+Unit tests are written using the [Jest](https://jestjs.io/) framework. They cover the business logic of the application.
+
+E2E tests are written using the [Supertest](https://github.com/ladjs/supertest) library and are placed in the `src/test` folder. They cover the API endpoints.
