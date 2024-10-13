@@ -156,3 +156,16 @@ Integration test should include consecutive calls to the API.
 Unit tests are written using the [Jest](https://jestjs.io/) framework. They cover the business logic of the application.
 
 E2E tests are written using the [Supertest](https://github.com/ladjs/supertest) library and are placed in the `src/test` folder. They cover the API endpoints.
+
+## Known issues
+
+- DB indices to add
+- use Nest ConfigService or equivalent for env handling
+- use Nest Logger instead of console.log
+- add swagger tags
+
+## Final thoughts
+
+In order to save some time while still showcasing the whole process, I didn't test the reports module's components as I did for the transactions module.
+I guess IRL I would also prioritize integration tests if time doesn't allow both.
+This ensures a behaviour and thus gives better protection against future regressions.
