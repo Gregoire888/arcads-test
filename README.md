@@ -11,6 +11,8 @@ This application is a real estate transactions monitoring platform that allows c
 $ docker-compose up -d
 # Install dependencies
 $ yarn install
+# Create .env file
+$ cp .env.example .env
 ```
 
 ## Running the app
@@ -70,18 +72,23 @@ The data model is designed to be as simple as possible. It is composed of only o
 | createdAt     | timestamp     | No     | No      |
 | updatedAt     | timestamp     | No     | No      |
 | transactionDate | timestamp     | No     | No      |
-| price         | integer       | No     | No      |
-| propertyType  | varchar(255)   | No     | No      |
+| transactionNetValue         | integer       | No     | Yes      |
+| transactionCost         | integer       | No     | No      |
+| transactionMargin         | integer       | No     | Yes     |
+| propertyType  | enum('Apartment', 'House', 'Land')   | No     | No      |
 | city          | varchar(255)   | No     | No      |
 | area          | integer        | No     | No      |
 
 ##### Indexes
 
 - `city`: Used for the city performance report.
+- `transactionMargin`: Used for the weekly average margin report.
+- `transactionDate`: Used for the weekly average margin report.
+- `transactionNetValue`: Used for the highest margin transaction report.
 
 ##### The `margin` column
 
-The `margin` column is a calculated column that is computed when a transaction is created. It is computed by subtracting the `price` from the `transactionCost`.
+The `margin` column is a calculated column that is computed when a transaction is created. It is computed by subtracting the `transactionNetValue` from the `transactionCost`.
 
 As several report data are based on the margin, it was decided to store it in the database. An approrite method could be a computed column in the database.
 
