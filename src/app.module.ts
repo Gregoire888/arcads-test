@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionsModule } from './transactions/transactions.module';
-// import { ReportsModule } from './reports/reports.module';
+import { ReportsModule } from './reports/reports.module';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
@@ -17,6 +17,7 @@ console.log('DATABASE_URL', process.env.NODE_ENV);
       entities: [__dirname + '/db/entities/*.entity.{js,ts}'],
     }),
     TransactionsModule,
+    ReportsModule,
   ],
 })
 export class AppModule {}

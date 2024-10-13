@@ -6,25 +6,25 @@ export class TransactionEntity {
   @PrimaryColumn()
   id!: string;
 
-  @Column()
+  @Column({ name: 'created_at' })
   createdAt!: Date;
 
-  @Column()
+  @Column({ name: 'updated_at' })
   updatedAt!: Date;
 
-  @Column()
+  @Column({ name: 'transaction_date' })
   transactionDate!: Date;
 
-  @Column()
+  @Column({ name: 'transaction_net_value' })
   transactionNetValue!: number;
 
-  @Column()
+  @Column({ name: 'transaction_cost' })
   transactionCost!: number;
 
-  @Column()
+  @Column({ name: 'transaction_margin' })
   transactionMargin!: number;
 
-  @Column()
+  @Column({ name: 'property_type' })
   propertyType!: PropertyType;
 
   @Column()

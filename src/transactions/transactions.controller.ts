@@ -35,7 +35,7 @@ export class TransactionsController {
     transactionDto: Record<string, unknown>,
   ): string[] {
     const transactionDtoSchema = z.object({
-      transactionDate: z.string().datetime(),
+      transactionDate: z.union([z.string().datetime(), z.string().date()]),
       transactionNetValue: z.number(),
       transactionCost: z.number(),
       propertyType: z.nativeEnum(PropertyType),
