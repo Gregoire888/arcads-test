@@ -19,7 +19,7 @@ export abstract class TransactionsRepositoryType {
   abstract getAverageMarginBetweenDates(
     start: Date,
     end: Date,
-  ): Promise<number>;
+  ): Promise<{ averageMargin: number }>;
   abstract getTopCitiesByMargin(take: number): Promise<CityPerformanceReport>;
 }
 
@@ -51,22 +51,28 @@ export class ReportsService {
       const eightDaysAgo = subDays(today, 8);
       const fifteenDaysAgo = subDays(today, 15);
 
-      const currentWeekMargin =
+      const { averageMargin: currentWeekAvgMargin } =
         await this.transactionsRepository.getAverageMarginBetweenDates(
           sevenDaysAgo,
           today,
         );
-      const previousWeekMargin =
+      const { averageMargin: previousWeekAvgMargin } =
         await this.transactionsRepository.getAverageMarginBetweenDates(
           fifteenDaysAgo,
           eightDaysAgo,
         );
+      const averageMarginEvolutionInPercentageRaw =
+        ((currentWeekAvgMargin - previousWeekAvgMargin) /
+          previousWeekAvgMargin) *
+        100;
+
+      const averageMarginEvolutionInPercentage =
+        Math.round(averageMarginEvolutionInPercentageRaw * 100) / 100;
 
       return succeed({
-        currentWeekAvgMargin: currentWeekMargin,
-        previousWeekAvgMargin: previousWeekMargin,
-        averageMarginEvolutionInPercentage:
-          ((currentWeekMargin - previousWeekMargin) / previousWeekMargin) * 100,
+        currentWeekAvgMargin,
+        previousWeekAvgMargin,
+        averageMarginEvolutionInPercentage,
       });
     } catch (error) {
       console.error(error);

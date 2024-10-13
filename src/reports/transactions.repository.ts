@@ -6,9 +6,10 @@ import {
   CityPerformanceReport,
   HighestMarginTransactionsReport,
 } from './types';
+import { TransactionsRepositoryType } from './reports.service';
 
 @Injectable()
-export class TransactionsRepository {
+export class TransactionsRepository implements TransactionsRepositoryType {
   constructor(
     @InjectRepository(TransactionEntity)
     private readonly repository: Repository<TransactionEntity>,
@@ -23,13 +24,16 @@ export class TransactionsRepository {
     });
   }
 
-  getAverageMarginBetweenDates(start: Date, end: Date): Promise<number> {
+  getAverageMarginBetweenDates(
+    start: Date,
+    end: Date,
+  ): Promise<{ averageMargin: number }> {
     return this.repository
       .createQueryBuilder('transactions')
       .select('AVG(transaction_margin) as averageMargin')
       .where('transaction_date >= :start', { start })
       .andWhere('transaction_date <= :end', { end })
-      .getRawOne() as Promise<number>;
+      .getRawOne() as Promise<{ averageMargin: number }>;
   }
 
   getTopCitiesByMargin(take: number): Promise<CityPerformanceReport> {

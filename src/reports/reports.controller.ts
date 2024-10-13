@@ -1,6 +1,6 @@
 import { Controller, Get, InternalServerErrorException } from '@nestjs/common';
 import { ReportsService } from './reports.service';
-import { isFailure } from 'src/utils/operation-result';
+import { isFailure } from '../utils/operation-result';
 
 @Controller('reports')
 export class ReportsController {

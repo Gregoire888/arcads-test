@@ -9,7 +9,7 @@ import { PropertyType } from '../types/transaction';
 import { isFailure, isSuccess } from '../utils/operation-result';
 
 const DUMMY_TRANSACTION: CreateTransactionDto = {
-  transactionDate: new Date(),
+  transactionDate: new Date().toISOString(),
   transactionNetValue: 100,
   transactionCost: 10,
   propertyType: PropertyType.Apartment,
@@ -53,6 +53,7 @@ describe('TransactionsService', () => {
           DUMMY_TRANSACTION.transactionCost,
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
+        transactionDate: expect.any(Date),
       });
     });
 
